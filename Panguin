@@ -1,0 +1,138 @@
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PENGUIN</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080d18;color:white;font-family:Arial;padding-bottom:70px}
+header{padding:18px;background:#111d30;color:#39baff;font-size:25px;font-weight:bold}
+nav{position:fixed;bottom:0;left:0;right:0;background:#142139;display:flex;justify-content:space-around;padding:13px}
+nav button{background:none;color:white;border:0}
+.page{display:none;padding:14px}
+.page.active{display:block}
+input,select{width:100%;padding:13px;margin:10px 0;background:#1b2940;color:white;border:1px solid #40516b;border-radius:9px}
+button{cursor:pointer}
+.video{background:#17253a;border-radius:12px;margin:15px 0;overflow:hidden}
+video{width:100%;background:black}
+.info{padding:12px}
+.actions{display:flex;gap:5px}
+.actions button{flex:1;padding:10px;background:#263b59;color:white;border:0;border-radius:7px}
+.primary{background:#168cf0;color:white;padding:13px;border:0;border-radius:8px;width:100%}
+h2{margin-top:10px}
+</style>
+</head>
+<body>
+
+<header>🐧 PENGUIN</header>
+
+<section id="home" class="page active">
+<h2>🏠 Home</h2>
+<input id="search" placeholder="ভিডিও খুঁজুন" oninput="render()">
+<div id="feed"></div>
+</section>
+
+<section id="explore" class="page">
+<h2>🔍 Explore</h2>
+<div id="exploreFeed"></div>
+</section>
+
+<section id="create" class="page">
+<h2>➕ Upload Video</h2>
+<input type="file" id="file" accept="video/*">
+<input id="title" placeholder="ভিডিওর নাম">
+<select id="cat">
+<option>Music</option>
+<option>Gaming</option>
+<option>Sports</option>
+<option>Funny</option>
+</select>
+<button class="primary" onclick="upload()">ভিডিও যোগ করুন</button>
+<p>এটি আপাতত এই ডিভাইসের ডেমো।</p>
+</section>
+
+<section id="profile" class="page">
+<h2>🐧 Profile</h2>
+<input id="name" placeholder="আপনার নাম">
+<button class="primary" onclick="saveName()">Save Name</button>
+<h3 id="username">PENGUIN User</h3>
+<h3>❤️ Liked Videos</h3>
+<div id="likes"></div>
+</section>
+
+<nav>
+<button onclick="page('home')">🏠<br>Home</button>
+<button onclick="page('explore')">🔍<br>Explore</button>
+<button onclick="page('create')">➕<br>Upload</button>
+<button onclick="page('profile')">👤<br>Profile</button>
+</nav>
+
+<script>
+let videos=[
+{id:1,title:"Big Buck Bunny",cat:"Funny",url:"https://storage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"},
+{id:2,title:"Elephants Dream",cat:"Gaming",url:"https://storage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"},
+{id:3,title:"For Bigger Fun",cat:"Music",url:"https://storage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"}
+];
+let liked=[];
+let next=4;
+
+function page(id){
+document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+render();
+}
+
+function card(v){
+return `<div class="video">
+<video controls playsinline src="${v.url}"></video>
+<div class="info">
+<h3>${v.title}</h3>
+<p>🐧 PENGUIN · ${v.cat}</p>
+<div class="actions">
+<button onclick="like(${v.id})">❤️ ${liked.includes(v.id)?'Liked':'Like'}</button>
+<button onclick="share(${v.id})">↗ Share</button>
+</div></div></div>`;
+}
+
+function render(){
+let q=document.getElementById('search').value.toLowerCase();
+document.getElementById('feed').innerHTML=videos.filter(v=>v.title.toLowerCase().includes(q)).map(card).join('');
+document.getElementById('exploreFeed').innerHTML=videos.map(card).join('');
+document.getElementById('likes').innerHTML=videos.filter(v=>liked.includes(v.id)).map(card).join('');
+}
+
+function like(id){
+if(liked.includes(id))liked=liked.filter(x=>x!==id);
+else liked.push(id);
+render();
+}
+
+function share(id){
+let v=videos.find(x=>x.id===id);
+if(navigator.share)navigator.share({title:v.title,url:location.href});
+else alert(v.title);
+}
+
+function upload(){
+let f=document.getElementById('file').files[0];
+let t=document.getElementById('title').value.trim();
+if(!f){alert('ভিডিও নির্বাচন করুন');return}
+if(!t){alert('ভিডিওর নাম লিখুন');return}
+if(!f.type.startsWith('video/')){alert('সঠিক ভিডিও নির্বাচন করুন');return}
+videos.unshift({id:next++,title:t,cat:document.getElementById('cat').value,url:URL.createObjectURL(f)});
+document.getElementById('file').value='';
+document.getElementById('title').value='';
+page('home');
+alert('ভিডিও যোগ হয়েছে!');
+}
+
+function saveName(){
+let n=document.getElementById('name').value.trim();
+if(n)document.getElementById('username').innerText=n;
+}
+render();
+</script>
+</body>
+</html>
